@@ -124,6 +124,7 @@
       <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.3.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Globalization.Calendars, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Globalization.Calendars.4.0.1\lib\net46\System.Globalization.Calendars.dll</HintPath>
       <Private>True</Private>
@@ -187,8 +188,11 @@
     <Compile Include="AccessLevel.cs" />
     <Compile Include="CommandHandler.cs" />
     <Compile Include="Configuration.cs" />
-    <Compile Include="HelpModule.cs" />
+    <Compile Include="DatabaseNames.cs" />
+    <Compile Include="ImageCreation.cs" />
+    <Compile Include="Modules\HelpModule.cs" />
     <Compile Include="MinPermissions.cs" />
+    <Compile Include="Modules\TournamentModule.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
