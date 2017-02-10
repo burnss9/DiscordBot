@@ -33,14 +33,16 @@ namespace Example.Modules
             using (SQLiteConnection conn = new SQLiteConnection("data source=C:\\Users\\SamSSD\\Documents\\Visual Studio 2015\\Projects\\RL6Mans\\RL6Mans\\bin\\Debug\\players.db"))
             {
                 conn.Open();
+                Console.WriteLine("inside connection");
                 using (SQLiteCommand cmd = new SQLiteCommand(conn))
                 {
-
-                    cmd.CommandText = "SELECT UID, WINS, LOSSES FROM playerScores WHERE UID = $id";
+                    Console.WriteLine("inside command");
+                    cmd.CommandText = "SELECT UID, WINS, LOSSES FROM playerScores WHERE UID = $id;";
                     cmd.Parameters.AddWithValue("$id", "<@" + Context.User.Id + ">");
 
                     using (SQLiteDataReader r = cmd.ExecuteReader())
                     {
+                        Console.WriteLine("inside reader");
                         while (r.Read())
                         {
 
@@ -354,7 +356,7 @@ namespace Example.Modules
             }
 
 
-            if (v.Users.Count == 6)
+            if (v.Users.Count >= 4)
             {
                 var userList = v.Users;
 
@@ -410,7 +412,7 @@ namespace Example.Modules
                 using (SQLiteCommand cmd = new SQLiteCommand(conn))
                 {
 
-                    cmd.CommandText = "SELECT UID, WINS, LOSSES FROM playerScores ORDER BY WINS";
+                    cmd.CommandText = "SELECT UID, WINS, LOSSES FROM playerScores ORDER BY WINS;";
 
                     using (SQLiteDataReader r = cmd.ExecuteReader())
                     {
@@ -462,7 +464,141 @@ namespace Example.Modules
             await dm.SendMessageAsync("\u200B" + stats);
 
         }
-        
+
+
+
+        [Command("matches")]
+        [Remarks("View the list of all your played matches.")]
+        [MinPermissions(AccessLevel.User)]
+        public async Task ListMyMatches()
+        {
+            var dm = await (Context.User as SocketGuildUser).CreateDMChannelAsync();
+
+            string stats = "";
+            using (SQLiteConnection conn = new SQLiteConnection("data source=C:\\Users\\SamSSD\\Documents\\Visual Studio 2015\\Projects\\RL6Mans\\RL6Mans\\bin\\Debug\\players.db"))
+            {
+                conn.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand(conn))
+                {
+
+                    cmd.CommandText = "SELECT W1, W2, W3, L1, L2, L3, WINS, LOSSES FROM NormalMatches WHERE $pid = W1 OR $pid = W2 OR $pid = W3 OR $pid = L1 OR $pid = L2 OR $pid = L3;";
+                    cmd.Parameters.AddWithValue("$pid", "<@" + Context.User.Id + ">");
+
+                    using (SQLiteDataReader r = cmd.ExecuteReader())
+                    {
+
+                        while (r.Read())
+                        {
+
+                            stats += Convert.ToString(r["W1"]) + " " + Convert.ToString(r["W2"]) + " " + Convert.ToString(r["W3"]) + " " +
+                                     Convert.ToString(r["WINS"]) + " " + Convert.ToString(r["LOSSES"]) + " " + Convert.ToString(r["L1"]) + " " +
+                                     Convert.ToString(r["L2"]) + " " + Convert.ToString(r["L3"] + "\n");
+
+                            if (stats.Length > 1000)
+                            {
+                                await dm.SendMessageAsync("\u200B" + stats);
+                                stats = "";
+                            }
+                        }
+
+
+                    }
+
+                }
+            }
+            await dm.SendMessageAsync("\u200B" + stats);
+
+        }
+
+        [Command("matches")]
+        [Remarks("View the list of all your played matches.")]
+        [MinPermissions(AccessLevel.User)]
+        public async Task ListPlayerMatches(string player)
+        {
+            var dm = await (Context.User as SocketGuildUser).CreateDMChannelAsync();
+
+            string stats = "";
+            using (SQLiteConnection conn = new SQLiteConnection("data source=C:\\Users\\SamSSD\\Documents\\Visual Studio 2015\\Projects\\RL6Mans\\RL6Mans\\bin\\Debug\\players.db"))
+            {
+                conn.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand(conn))
+                {
+
+                    cmd.CommandText = "SELECT W1, W2, W3, L1, L2, L3, WINS, LOSSES FROM NormalMatches WHERE $pid = W1 OR $pid = W2 OR $pid = W3 OR $pid = L1 OR $pid = L2 OR $pid = L3;";
+                    cmd.Parameters.AddWithValue("$pid", player);
+
+                    using (SQLiteDataReader r = cmd.ExecuteReader())
+                    {
+
+                        while (r.Read())
+                        {
+
+                            stats += Convert.ToString(r["W1"]) + " " + Convert.ToString(r["W2"]) + " " + Convert.ToString(r["W3"]) + " " +
+                                     Convert.ToString(r["WINS"]) + " " + Convert.ToString(r["LOSSES"]) + " " + Convert.ToString(r["L1"]) + " " +
+                                     Convert.ToString(r["L2"]) + " " + Convert.ToString(r["L3"] + "\n");
+
+                            if (stats.Length > 1000)
+                            {
+                                await dm.SendMessageAsync("\u200B" + stats);
+                                stats = "";
+                            }
+                        }
+
+
+                    }
+
+                }
+            }
+            await dm.SendMessageAsync("\u200B" + stats);
+
+        }
+
+
+
+        [Command("matches all")]
+        [Remarks("View the list of all your played matches.")]
+        [MinPermissions(AccessLevel.User)]
+        public async Task ListAllMatches()
+        {
+            var dm = await (Context.User as SocketGuildUser).CreateDMChannelAsync();
+
+            string stats = "";
+            using (SQLiteConnection conn = new SQLiteConnection("data source=C:\\Users\\SamSSD\\Documents\\Visual Studio 2015\\Projects\\RL6Mans\\RL6Mans\\bin\\Debug\\players.db"))
+            {
+                conn.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand(conn))
+                {
+
+                    cmd.CommandText = "SELECT W1, W2, W3, L1, L2, L3, WINS, LOSSES FROM NormalMatches";
+
+                    using (SQLiteDataReader r = cmd.ExecuteReader())
+                    {
+
+                        while (r.Read())
+                        {
+
+                            stats += Convert.ToString(r["W1"]) + " " + Convert.ToString(r["W2"]) + " " + Convert.ToString(r["W3"]) + " " +
+                                     Convert.ToString(r["WINS"]) + " " + Convert.ToString(r["LOSSES"]) + " " + Convert.ToString(r["L1"]) + " " +
+                                     Convert.ToString(r["L2"]) + " " + Convert.ToString(r["L3"] + "\n");
+
+                            if (stats.Length > 1000)
+                            {
+                                await dm.SendMessageAsync("\u200B" + stats);
+                                stats = "";
+                            }
+                        }
+
+
+                    }
+
+                }
+            }
+            await dm.SendMessageAsync("\u200B" + stats);
+
+        }
+
+
+
         [Command("admin list")]
         [Remarks("View the list of all player's records.")]
         [MinPermissions(AccessLevel.ServerMod)]
@@ -547,7 +683,7 @@ namespace Example.Modules
 
                     using (SQLiteDataReader r = cmd.ExecuteReader())
                     {
-                        
+
                         int count = 0;
 
                         while (r.Read() && count < 10)
@@ -839,7 +975,7 @@ namespace Example.Modules
         }
 
 
-        
+
         private void reportMatch(string[] ids, bool first3won, int wins, int losses)
         {
 
@@ -848,7 +984,7 @@ namespace Example.Modules
                 conn.Open();
                 using (SQLiteCommand cmd = new SQLiteCommand(conn))
                 {
-                    
+
                     cmd.CommandText = "INSERT INTO NormalMatches (W1, W2, W3, L1, L2, L3, WINS, LOSSES) VALUES ($w1, $w2, $w3, $l1, $l2, $l3, $wins, $losses);";
                     cmd.Parameters.AddWithValue("$w1", ids[0]);
                     cmd.Parameters.AddWithValue("$w2", ids[1]);
@@ -860,13 +996,13 @@ namespace Example.Modules
                     cmd.Parameters.AddWithValue("$losses", losses);
 
                     cmd.ExecuteNonQuery();
-                   
+
                 }
 
             }
 
         }
-        
+
 
 
     }
