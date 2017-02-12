@@ -153,6 +153,22 @@ namespace Example.Modules
             await ReplyAsync("\u200B" + stats);
         }
 
+        
+        [Command("ban")]
+        [Remarks("Ban someone from the discord.")]
+        [MinPermissions(AccessLevel.User)]
+        public async Task BanPlayer(string user)
+        {
+            await ReplyAsync("\u200B" + "<@" + Context.User.Id + ">" + " has just banned " + user + " from the discord!");
+        }
+
+        [Command("kick")]
+        [Remarks("Kick someone from the discord.")]
+        [MinPermissions(AccessLevel.User)]
+        public async Task KickPlayer(string user)
+        {
+            await ReplyAsync("\u200B" + "<@" + Context.User.Id + ">" + " has just kicked " + user + " from the discord!");
+        }
 
         [Command("register")]
         [Remarks("Unecessary command used to add you to the database if you want to see your stats before actually playing a game.")]
