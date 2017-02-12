@@ -1,6 +1,8 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
+using Example.Modules;
 using Example.Types;
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -20,6 +22,10 @@ namespace Example
             await _cmds.AddModulesAsync(Assembly.GetEntryAssembly());    // Load all modules from the assembly.
 
             _client.MessageReceived += HandleCommand;                    // Register the messagereceived event to handle commands.
+
+
+            _client.UserVoiceStateUpdated += HandleVoiceChannelJoin;
+
         }
 
         private async Task HandleCommand(SocketMessage s)
@@ -42,5 +48,24 @@ namespace Example
                     await context.Channel.SendMessageAsync(result.ToString());
             }
         }
+        
+
+        private async Task HandleVoiceChannelJoin(SocketUser u, SocketVoiceState s1, SocketVoiceState s2)
+        {
+            var dm = await u.CreateDMChannelAsync();
+
+            if(s2.VoiceChannel != null && s2.VoiceChannel.Id == 276557465619922946)
+            {
+                PublicModule.removeFromQueue(u as SocketGuildUser);
+            }
+
+            if(s2.VoiceChannel == null && s1.VoiceChannel.Id == 276557465619922946)
+            {
+                Console.WriteLine("Was in queue now not in queue");
+                await dm.SendMessageAsync("Remember to !q if you want to be notified when there are 5 other players wanting to play!\nNote that if you had done this before you joined the queue channel you have been automatically removed.");
+            }
+
+        }
+
     }
 }

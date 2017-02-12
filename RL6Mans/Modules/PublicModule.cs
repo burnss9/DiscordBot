@@ -22,6 +22,81 @@ namespace Example.Modules
 
         int listTableSpaces = 20;
 
+        static ArrayList playersInQueue = new ArrayList();
+        static ArrayList dmChannelsForQueue = new ArrayList();
+
+
+        [Command("queue"), Alias("q")]
+        [Remarks("Queue without joining channel.")]
+        [MinPermissions(AccessLevel.User)]
+        public async Task Queue()
+        {
+            var voiceChannel = Context.Client.GetChannel(276557465619922946) as SocketVoiceChannel;
+            if (!voiceChannel.Users.Contains(Context.User) && !playersInQueue.Contains(Context.User))
+            {
+                playersInQueue.Add(Context.User);
+                var dm = await Context.User.CreateDMChannelAsync();
+
+                dmChannelsForQueue.Add(dm);
+
+                if (playersInQueue.Count + voiceChannel.Users.Count >= 6)
+                {
+                    foreach (Discord.Rest.RestDMChannel d in dmChannelsForQueue)
+                    {
+                        await d.SendMessageAsync("The queue is full! Join the queue channel to begin picking teams!");
+                    }
+
+                    dmChannelsForQueue.Clear();
+                    playersInQueue.Clear();
+                }
+
+                var ch = await Context.User.CreateDMChannelAsync();
+                await ch.SendMessageAsync("You have joined the text-only queue.");
+            }
+            else
+            {
+                var dm = await Context.User.CreateDMChannelAsync();
+                if (playersInQueue.Contains(Context.User))
+                {
+
+                    await dm.SendMessageAsync("You are already in the text-only queue!");
+                }
+                if (voiceChannel.Users.Contains(Context.User))
+                {
+                    await dm.SendMessageAsync("You can't do that while already sitting in the queue channel!");
+                }
+
+
+            }
+        }
+
+
+        [Command("dequeue"), Alias("dq")]
+        [Remarks("Dequeue from the text-only queue.")]
+        [MinPermissions(AccessLevel.User)]
+        public async Task Dequeue()
+        {
+            if (playersInQueue.Contains(Context.User))
+            {
+                playersInQueue.Remove(Context.User);
+
+                dmChannelsForQueue.Clear();
+
+                foreach (SocketGuildUser u in playersInQueue)
+                {
+                    var dm = await u.CreateDMChannelAsync();
+                    dmChannelsForQueue.Add(dm);
+                }
+                var ch = await Context.User.CreateDMChannelAsync();
+                await ch.SendMessageAsync("You have left the text-only queue.");
+            }
+            else
+            {
+                var ch = await Context.User.CreateDMChannelAsync();
+                await ch.SendMessageAsync("You weren't in the text-only queue to begin with!");
+            }
+        }
+
 
         [Command("stats"), Alias("s")]
         [Remarks("View your own stats.")]
@@ -645,8 +720,14 @@ namespace Example.Modules
                                     stringspaces += "\u2002";
                                 }
 
-
-                                stats += "    No ratio yet.`                    " + stringspaces + Convert.ToString(r["UID"]) + "\n";
+                                string pidString = Convert.ToString(r["UID"]);
+                                ulong pid = Convert.ToUInt64(pidString.Substring(2, pidString.Length - 3));
+                                Console.WriteLine("converted");
+                                SocketGuildUser u = Context.Client.GetUser(pid) as SocketGuildUser;
+                                Console.WriteLine("got user");
+                                string username = u.Username;
+                                Console.WriteLine("got name");
+                                stats += "    No ratio yet.`                    " + stringspaces + username + "\n";
                             }
 
                             if (stats.Length > 1000)
@@ -974,8 +1055,6 @@ namespace Example.Modules
 
         }
 
-
-
         private void reportMatch(string[] ids, bool first3won, int wins, int losses)
         {
 
@@ -1004,6 +1083,21 @@ namespace Example.Modules
         }
 
 
+        public static async void removeFromQueue(SocketGuildUser user)
+        {
+            if (playersInQueue.Contains(user))
+            {
+                playersInQueue.Remove(user);
+
+                dmChannelsForQueue.Clear();
+
+                foreach (SocketGuildUser u in playersInQueue)
+                {
+                    var dm = await u.CreateDMChannelAsync();
+                    dmChannelsForQueue.Add(dm);
+                }
+            }
+        }
 
     }
 
