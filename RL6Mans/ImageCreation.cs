@@ -12,14 +12,10 @@ namespace RL6Mans
     class ImageCreation
     {
         
-        public static byte[] CreateGridImage(
-          int maxXCells,
-          int maxYCells,
-          int cellXPosition,
-          int cellYPosition,
-          int boxSize)
+        public static byte[] CreateQueueImage(
+          int playersInQueue, int playersInVoiceQueue)
         {
-            using (var bmp = new Bitmap(maxXCells * boxSize + 1, maxYCells * boxSize + 1))
+            using (var bmp = new Bitmap(600, 200))
             {
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
@@ -28,28 +24,22 @@ namespace RL6Mans
                     pen.Width = 1;
 
                     //Draw red rectangle to go behind cross
-                    Rectangle rect = new Rectangle(boxSize * (cellXPosition - 1), boxSize * (cellYPosition - 1), boxSize, boxSize);
-                    g.FillRectangle(new SolidBrush(Color.Red), rect);
+                    Rectangle rect = new Rectangle(0,0, playersInQueue * 100, 200);
+                    g.FillRectangle(new SolidBrush(Color.Green), rect);
+                    Rectangle rect2 = new Rectangle(playersInQueue * 100, 0, (6 - playersInQueue) * 100, 200);
+                    g.FillRectangle(new SolidBrush(Color.Red), rect2);
+                    Rectangle rect3 = new Rectangle(playersInQueue * 100, 0, playersInVoiceQueue * 100, 200);
+                    g.FillRectangle(new SolidBrush(Color.Blue), rect3);
 
-                    //Draw cross
-                    g.DrawLine(pen, boxSize * (cellXPosition - 1), boxSize * (cellYPosition - 1), boxSize * cellXPosition, boxSize * cellYPosition);
-                    g.DrawLine(pen, boxSize * (cellXPosition - 1), boxSize * cellYPosition, boxSize * cellXPosition, boxSize * (cellYPosition - 1));
+                    var f = new Font(FontFamily.GenericMonospace, 125.0f, FontStyle.Bold);
 
-                    //Draw horizontal lines
-                    for (int i = 0; i <= maxXCells; i++)
-                    {
-                        g.DrawLine(pen, (i * boxSize), 0, i * boxSize, boxSize * maxYCells);
-                    }
+                    g.DrawString((playersInQueue + playersInVoiceQueue) + " / 6", f, new SolidBrush(Color.White), new PointF(10, 10));
 
-                    //Draw vertical lines            
-                    for (int i = 0; i <= maxYCells; i++)
-                    {
-                        g.DrawLine(pen, 0, (i * boxSize), boxSize * maxXCells, i * boxSize);
-                    }
                 }
 
                 var memStream = new MemoryStream();
-                bmp.Save(memStream, ImageFormat.Jpeg);
+                bmp.Save("queue.png", ImageFormat.Png);
+                bmp.Save(memStream, ImageFormat.Png);
                 return memStream.ToArray();
             }
         }

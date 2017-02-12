@@ -7,6 +7,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using System.Collections;
+using Discord;
+using RL6Mans;
+using System.IO;
+using System.Threading;
 
 namespace Example.Modules
 {
@@ -24,6 +28,8 @@ namespace Example.Modules
 
         static ArrayList playersInQueue = new ArrayList();
         static ArrayList dmChannelsForQueue = new ArrayList();
+
+        static volatile Semaphore updatingQueueStatusLock = new Semaphore(1, 1);
 
 
         [Command("queue"), Alias("q")]
@@ -52,6 +58,10 @@ namespace Example.Modules
 
                 var ch = await Context.User.CreateDMChannelAsync();
                 await ch.SendMessageAsync("You have joined the text-only queue.");
+
+
+                updateQueueStatusMessage(Context.Client);
+
             }
             else
             {
@@ -89,6 +99,8 @@ namespace Example.Modules
                 }
                 var ch = await Context.User.CreateDMChannelAsync();
                 await ch.SendMessageAsync("You have left the text-only queue.");
+
+                updateQueueStatusMessage(Context.Client);
             }
             else
             {
@@ -108,16 +120,14 @@ namespace Example.Modules
             using (SQLiteConnection conn = new SQLiteConnection("data source=C:\\Users\\SamSSD\\Documents\\Visual Studio 2015\\Projects\\RL6Mans\\RL6Mans\\bin\\Debug\\players.db"))
             {
                 conn.Open();
-                Console.WriteLine("inside connection");
                 using (SQLiteCommand cmd = new SQLiteCommand(conn))
                 {
-                    Console.WriteLine("inside command");
                     cmd.CommandText = "SELECT UID, WINS, LOSSES FROM playerScores WHERE UID = $id;";
                     cmd.Parameters.AddWithValue("$id", "<@" + Context.User.Id + ">");
 
                     using (SQLiteDataReader r = cmd.ExecuteReader())
                     {
-                        Console.WriteLine("inside reader");
+
                         while (r.Read())
                         {
 
@@ -168,35 +178,35 @@ namespace Example.Modules
         }
 
 
-        [Command("report")]
-        [Remarks("Report scores."), Alias("rep", "r")]
-        [MinPermissions(AccessLevel.User)]
-        public async Task ReportScore(string p1, string p2, string p3, string wl, string p4, string p5, string p6)
-        {
+        //[Command("report")]
+        //[Remarks("Report scores."), Alias("rep", "r")]
+        //[MinPermissions(AccessLevel.User)]
+        //public async Task ReportScore(string p1, string p2, string p3, string wl, string p4, string p5, string p6)
+        //{
 
-            bool firstTeamWon = true;
+        //    bool firstTeamWon = true;
 
-            if (wl.Equals("WL")) firstTeamWon = true;
-            if (wl.Equals("LW")) firstTeamWon = false;
+        //    if (wl.Equals("WL")) firstTeamWon = true;
+        //    if (wl.Equals("LW")) firstTeamWon = false;
 
-            if (!wl.Equals("WL") && !wl.Equals("LW"))
-            {
-                await ReplyAsync("\u200B" + "Please report the outcome as 'WL' or 'LW'");
-                return;
-            }
+        //    if (!wl.Equals("WL") && !wl.Equals("LW"))
+        //    {
+        //        await ReplyAsync("\u200B" + "Please report the outcome as 'WL' or 'LW'");
+        //        return;
+        //    }
 
-            reportScore(p1, firstTeamWon);
-            reportScore(p2, firstTeamWon);
-            reportScore(p3, firstTeamWon);
-            reportScore(p4, !firstTeamWon);
-            reportScore(p5, !firstTeamWon);
-            reportScore(p6, !firstTeamWon);
+        //    reportScore(p1, firstTeamWon);
+        //    reportScore(p2, firstTeamWon);
+        //    reportScore(p3, firstTeamWon);
+        //    reportScore(p4, !firstTeamWon);
+        //    reportScore(p5, !firstTeamWon);
+        //    reportScore(p6, !firstTeamWon);
 
-            await ReplyAsync("\u200B" + "Score reported.");
+        //    await ReplyAsync("\u200B" + "Score reported.");
 
-            await ((Context.Client.GetChannel(LOG_CHANNEL)) as Discord.ITextChannel).SendMessageAsync("\u200B" + Context.Message.ToString() + "```at: " + Context.Message.Timestamp + " by: " + Context.Message.Author + "```");
+        //    await ((Context.Client.GetChannel(LOG_CHANNEL)) as Discord.ITextChannel).SendMessageAsync("\u200B" + Context.Message.ToString() + "```at: " + Context.Message.Timestamp + " by: " + Context.Message.Author + "```");
 
-        }
+        //}
 
 
         [Command("report")]
@@ -1099,10 +1109,65 @@ namespace Example.Modules
             }
         }
 
+        public static async void checkForFullQueueOnVoiceJoin(SocketVoiceChannel v)
+        {
+            if (playersInQueue.Count + v.Users.Count >= 6)
+            {
+
+                foreach (Discord.Rest.RestDMChannel d in dmChannelsForQueue)
+                {
+                    await d.SendMessageAsync("The queue is full! Join the queue channel to begin picking teams!");
+                }
+
+                dmChannelsForQueue.Clear();
+                playersInQueue.Clear();
+            }
+
+
+        }
+
+
+        public static async void updateQueueStatusMessage(DiscordSocketClient client)
+        {
+            var channel = (client.GetChannel(280243653291802625) as SocketTextChannel);
+            var vchannel = (client.GetChannel(276557465619922946) as SocketVoiceChannel);
+
+
+
+            //Color c = new Color((6 - playersInQueue.Count) * 42 / 255.0f, playersInQueue.Count * 42 / 255.0f, 0);
+
+            //Embed e = new EmbedBuilder()
+            //        .WithColor(c)
+            //        .WithAuthor(a => a.Name = "RL 6 Mans")
+            //        .WithTitle("Queue:")
+            //        .WithDescription("The text-only queue currently has " + playersInQueue.Count + (playersInQueue.Count == 1 ? " player" : " players") + " in it.")
+            //        .Build();
+
+            updatingQueueStatusLock.WaitOne();
+            {
+                var messages = await channel.GetMessagesAsync(100).Flatten();
+
+                await channel.DeleteMessagesAsync(messages);
+                var bytearray = ImageCreation.CreateQueueImage(playersInQueue.Count, vchannel.Users.Count);
+
+                using (var mem = new MemoryStream(bytearray))
+                {
+                    mem.Seek(0, SeekOrigin.Begin);
+                    await channel.SendFileAsync(mem, "queue.png", "Info:");
+                }
+                await channel.SendMessageAsync("The text-only queue(green) currently has " + playersInQueue.Count + (playersInQueue.Count == 1 ? " player" : " players") + " in it.\nThe voice queue(blue) has " + vchannel.Users.Count + ".");
+
+            }
+            updatingQueueStatusLock.Release();
+
+
+        }
+
     }
 
 
-
-
-
 }
+
+
+
+

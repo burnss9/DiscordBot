@@ -25,7 +25,7 @@ namespace Example.Types
         {
             Prefix = "!";
             Owners = new ulong[] { 0 };
-            Token = "Mjc3OTgzNTY2MTk1ODUxMjY0.C3lutQ.De39RFAWQFKIdhzNwlXvMJxuRYk";
+            Token = "";
         }
 
         /// <summary> Save the configuration to the specified file location. </summary>

@@ -9,8 +9,6 @@ namespace RL6Mans
     public class DatabaseNames
     {
 
-        string tablePlayerScores = "playerScores";
-        string tableTeams = "Teams";
 
     }
 }

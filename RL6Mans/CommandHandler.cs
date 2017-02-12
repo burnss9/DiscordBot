@@ -26,6 +26,10 @@ namespace Example
 
             _client.UserVoiceStateUpdated += HandleVoiceChannelJoin;
 
+            //Startup messages
+
+            PublicModule.updateQueueStatusMessage(_client);
+
         }
 
         private async Task HandleCommand(SocketMessage s)
@@ -56,14 +60,26 @@ namespace Example
 
             if(s2.VoiceChannel != null && s2.VoiceChannel.Id == 276557465619922946)
             {
-                PublicModule.removeFromQueue(u as SocketGuildUser);
+                if (s1.VoiceChannel != null && s1.VoiceChannel.Id != 276557465619922946 || s1.VoiceChannel == null)
+                {
+                    PublicModule.removeFromQueue(u as SocketGuildUser);
+                    PublicModule.checkForFullQueueOnVoiceJoin(s2.VoiceChannel);
+                    PublicModule.updateQueueStatusMessage(_client);
+                }
             }
 
-            if(s2.VoiceChannel == null && s1.VoiceChannel.Id == 276557465619922946)
+            if(s2.VoiceChannel == null && s1.VoiceChannel != null && s1.VoiceChannel.Id == 276557465619922946)
             {
-                Console.WriteLine("Was in queue now not in queue");
                 await dm.SendMessageAsync("Remember to !q if you want to be notified when there are 5 other players wanting to play!\nNote that if you had done this before you joined the queue channel you have been automatically removed.");
+                PublicModule.updateQueueStatusMessage(_client);
             }
+
+            if (s2.VoiceChannel != null && s2.VoiceChannel.Id != 276557465619922946 && s1.VoiceChannel != null && s1.VoiceChannel.Id == 276557465619922946)
+            {
+                await dm.SendMessageAsync("Remember to !q if you want to be notified when there are 5 other players wanting to play!\nNote that if you had done this before you joined the queue channel you have been automatically removed.");
+                PublicModule.updateQueueStatusMessage(_client);
+            }
+
 
         }
 
