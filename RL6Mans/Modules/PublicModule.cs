@@ -192,38 +192,7 @@ namespace Example.Modules
             }
             await ReplyAsync("\u200B" + "Player registered.");
         }
-
-
-        //[Command("report")]
-        //[Remarks("Report scores."), Alias("rep", "r")]
-        //[MinPermissions(AccessLevel.User)]
-        //public async Task ReportScore(string p1, string p2, string p3, string wl, string p4, string p5, string p6)
-        //{
-
-        //    bool firstTeamWon = true;
-
-        //    if (wl.Equals("WL")) firstTeamWon = true;
-        //    if (wl.Equals("LW")) firstTeamWon = false;
-
-        //    if (!wl.Equals("WL") && !wl.Equals("LW"))
-        //    {
-        //        await ReplyAsync("\u200B" + "Please report the outcome as 'WL' or 'LW'");
-        //        return;
-        //    }
-
-        //    reportScore(p1, firstTeamWon);
-        //    reportScore(p2, firstTeamWon);
-        //    reportScore(p3, firstTeamWon);
-        //    reportScore(p4, !firstTeamWon);
-        //    reportScore(p5, !firstTeamWon);
-        //    reportScore(p6, !firstTeamWon);
-
-        //    await ReplyAsync("\u200B" + "Score reported.");
-
-        //    await ((Context.Client.GetChannel(LOG_CHANNEL)) as Discord.ITextChannel).SendMessageAsync("\u200B" + Context.Message.ToString() + "```at: " + Context.Message.Timestamp + " by: " + Context.Message.Author + "```");
-
-        //}
-
+        
 
         [Command("report")]
         [Remarks("Report scores."), Alias("rep", "r")]
@@ -1148,16 +1117,6 @@ namespace Example.Modules
             var channel = (client.GetChannel(280243653291802625) as SocketTextChannel);
             var vchannel = (client.GetChannel(276557465619922946) as SocketVoiceChannel);
 
-
-
-            //Color c = new Color((6 - playersInQueue.Count) * 42 / 255.0f, playersInQueue.Count * 42 / 255.0f, 0);
-
-            //Embed e = new EmbedBuilder()
-            //        .WithColor(c)
-            //        .WithAuthor(a => a.Name = "RL 6 Mans")
-            //        .WithTitle("Queue:")
-            //        .WithDescription("The text-only queue currently has " + playersInQueue.Count + (playersInQueue.Count == 1 ? " player" : " players") + " in it.")
-            //        .Build();
 
             updatingQueueStatusLock.WaitOne();
             {
