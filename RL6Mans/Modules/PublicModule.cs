@@ -37,6 +37,12 @@ namespace Example.Modules
         [MinPermissions(AccessLevel.User)]
         public async Task Queue()
         {
+            if(Context.Channel is IDMChannel)
+            {
+                await ReplyAsync("Sorry, queueing through DMs doesn't work as well as I had hoped. Please use the server channels.\nI'll try to fix this tomorrow.");
+                return;
+            }
+
             var voiceChannel = Context.Client.GetChannel(276557465619922946) as SocketVoiceChannel;
             if (!voiceChannel.Users.Contains(Context.User) && !playersInQueue.Contains(Context.User))
             {
@@ -86,6 +92,13 @@ namespace Example.Modules
         [MinPermissions(AccessLevel.User)]
         public async Task Dequeue()
         {
+
+            if (Context.Channel is IDMChannel)
+            {
+                await ReplyAsync("Sorry, queueing through DMs doesn't work as well as I had hoped. Please use the server channels.");
+                return;
+            }
+
             if (playersInQueue.Contains(Context.User))
             {
                 playersInQueue.Remove(Context.User);
