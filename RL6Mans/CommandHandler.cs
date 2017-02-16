@@ -70,7 +70,6 @@ namespace Example
 
             if(s2.VoiceChannel?.Id != 276557465619922946 && s1.VoiceChannel?.Id == 276557465619922946)
             {
-                await dm.SendMessageAsync("Remember to !q if you want to be notified when there are 5 other players wanting to play!\nNote that if you had done this before you joined the queue channel you have been automatically removed.");
                 PublicModule.updateQueueStatusMessage(_client);
             }
 

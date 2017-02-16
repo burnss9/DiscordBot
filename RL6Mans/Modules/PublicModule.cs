@@ -37,7 +37,7 @@ namespace Example.Modules
         [MinPermissions(AccessLevel.User)]
         public async Task Queue()
         {
-            if(Context.Channel is IDMChannel)
+            if (Context.Channel is IDMChannel)
             {
                 await ReplyAsync("Sorry, queueing through DMs doesn't work as well as I had hoped. Please use the server channels.\nI'll try to fix this tomorrow.");
                 return;
@@ -166,7 +166,7 @@ namespace Example.Modules
             await ReplyAsync("\u200B" + stats);
         }
 
-        
+
         [Command("ban")]
         [Remarks("Ban someone from the discord.")]
         [MinPermissions(AccessLevel.User)]
@@ -205,7 +205,7 @@ namespace Example.Modules
             }
             await ReplyAsync("\u200B" + "Player registered.");
         }
-        
+
 
         [Command("report")]
         [Remarks("Report scores."), Alias("rep", "r")]
@@ -486,7 +486,10 @@ namespace Example.Modules
         [MinPermissions(AccessLevel.User)]
         public async Task ListAllPlayers()
         {
-            var dm = await (Context.User as SocketGuildUser).CreateDMChannelAsync();
+
+            Discord.Rest.RestDMChannel dm = null;
+
+            if (!(Context.Channel is IDMChannel)) { dm = await (Context.User as SocketGuildUser).CreateDMChannelAsync(); }
 
             string stats = "";
             using (SQLiteConnection conn = new SQLiteConnection("data source=C:\\Users\\SamSSD\\Documents\\Visual Studio 2015\\Projects\\RL6Mans\\RL6Mans\\bin\\Debug\\players.db"))
@@ -533,7 +536,16 @@ namespace Example.Modules
 
                             if (stats.Length > 1000)
                             {
-                                await dm.SendMessageAsync("\u200B" + stats);
+                                if (Context.Channel is IDMChannel)
+                                {
+                                    await ReplyAsync("\u200B" + stats);
+                                }
+                                else
+                                {
+
+                                    await dm.SendMessageAsync("\u200B" + stats);
+                                }
+
                                 stats = "";
                             }
 
@@ -543,8 +555,15 @@ namespace Example.Modules
                 }
 
             }
+            if (Context.Channel is IDMChannel)
+            {
+                await ReplyAsync("\u200B" + stats);
+            }
+            else
+            {
 
-            await dm.SendMessageAsync("\u200B" + stats);
+                await dm.SendMessageAsync("\u200B" + stats);
+            }
 
         }
 
